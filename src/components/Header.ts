@@ -1,7 +1,7 @@
 export default function Header() {
   return `
     <header class="my-4">
-      <a href="/" class="text-black">
+      <a href="/#/" class="text-black">
         <h1 class="text-center font-bold">🚇 지하철 노선도</h1>
       </a>
       <nav class="d-flex justify-center flex-wrap">
