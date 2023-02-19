@@ -1,4 +1,4 @@
-import Observe from '../domain/Observe';
+import Observe from './Observe';
 import { _render } from './Render';
 
 interface RefContext<T> {
