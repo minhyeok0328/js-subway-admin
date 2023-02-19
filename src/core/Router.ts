@@ -32,7 +32,9 @@ export class Router {
   }
 
   routing() {
-    const path: string = window.location.hash.replace('#', '');
+    let path: string = window.location.hash.replace('#', '');
+    if (!path.length) path = '/';
+
     const selectPath = this.findRoute(path);
 
     if (!selectPath) {

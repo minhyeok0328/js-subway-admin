@@ -1,38 +1,45 @@
 import Observe from '../domain/Observe';
 import { _render } from './Render';
 
-interface IContext<T> {
-  state: T;
+interface RefContext<T> {
+  state: T | null;
   initialize: boolean;
-  fn?: () => T;
-  watch?: any[];
 }
 
-interface IComposition<T> {
-  ref: (initialState: T) => T;
-  reactive: (initialState: T[]) => T;
-  computed: (callbackFn: () => T, watchState: any[]) => T;
+interface ComputedContext<T> {
+  fn: () => T;
+  initialize: boolean;
+  state: { value: T };
+  watch: unknown;
 }
 
-const refContext: IContext<any> = {
-  state: null,
-  initialize: false,
-};
+interface CompositionAPI {
+  ref<T>(initialState: T): T;
 
-const reactiveContext: IContext<any> = {
-  state: null,
-  initialize: false,
-};
+  reactive<T extends Record<string, unknown>>(initialState: T): T;
 
-const computedContext: IContext<any> = {
-  state: null,
-  fn: () => '',
-  watch: [],
-  initialize: false,
-};
+  computed<T>(callbackFn: () => T, watchState?: unknown): T;
+}
 
-function Composition<T>(callback: () => void): IComposition<T> {
-  const ref = (initialState: T) => {
+function Composition(callback: () => void): CompositionAPI {
+  const refContext: RefContext<unknown> = {
+    state: null,
+    initialize: false,
+  };
+
+  const reactiveContext: RefContext<Record<string, unknown>> = {
+    state: null,
+    initialize: false,
+  };
+
+  const computedContext: ComputedContext<unknown> = {
+    fn: () => '',
+    initialize: false,
+    state: { value: null },
+    watch: null,
+  };
+
+  const ref = <T>(initialState: T): T => {
     const { initialize } = refContext;
 
     if (!initialize) {
@@ -40,10 +47,10 @@ function Composition<T>(callback: () => void): IComposition<T> {
       refContext.initialize = true;
     }
 
-    return refContext.state;
+    return refContext.state as T;
   };
 
-  const reactive = (initialState: object | []) => {
+  const reactive = <T extends Record<string, unknown>>(initialState: T): T => {
     const { initialize } = reactiveContext;
 
     if (!initialize) {
@@ -51,10 +58,10 @@ function Composition<T>(callback: () => void): IComposition<T> {
       reactiveContext.initialize = true;
     }
 
-    return reactiveContext.state;
+    return reactiveContext.state as T;
   };
 
-  const computed = (callbackFn: () => T, watchState: any[]) => {
+  const computed = <T>(callbackFn: () => T, watchState?: unknown): T => {
     const { initialize, fn, watch } = computedContext;
 
     if (!initialize) {
@@ -63,15 +70,15 @@ function Composition<T>(callback: () => void): IComposition<T> {
       computedContext.watch = watchState;
       computedContext.initialize = true;
 
-      return computedContext.state;
+      return computedContext.state as T;
     }
 
     if (JSON.stringify(watch) !== JSON.stringify(watchState)) {
       computedContext.watch = watchState;
-      computedContext.state.value = fn?.();
+      computedContext.state!.value = fn();
     }
 
-    return computedContext.state;
+    return computedContext.state as T;
   };
 
   return {
