@@ -1,3 +1,5 @@
+import { debounce } from '../utils';
+
 interface IConfig {
   container: Element | null;
   rootComponent: () => string;
@@ -9,10 +11,10 @@ function Render() {
     rootComponent: () => '',
   };
 
-  const _render = () => {
+  const _render = debounce(() => {
     const { container, rootComponent } = config;
     container!.innerHTML = rootComponent();
-  };
+  });
 
   const render = (rootComponent: IConfig['rootComponent']) => {
     config.container!.innerHTML = rootComponent();
@@ -25,7 +27,6 @@ function Render() {
     }
 
     config.container = container;
-
     return { render };
   };
 
