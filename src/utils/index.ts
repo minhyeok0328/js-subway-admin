@@ -7,7 +7,7 @@ export function debounce(fn: (...args: unknown[]) => void) {
     }
 
     raf = window.requestAnimationFrame(() => {
-      fn(...args); // run useful code
+      fn(...args);
       raf = 0;
     });
   };

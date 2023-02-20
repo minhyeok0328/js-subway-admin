@@ -1,6 +1,6 @@
 export class Repository {
   constructor(
-    private readonly _key: string = '',
+    private readonly _key: string,
     private readonly _storage: Storage = localStorage,
   ) {
   }
