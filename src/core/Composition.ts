@@ -1,38 +1,27 @@
 import Observe from './Observe';
 import { _render } from './Render';
 
-interface RefContext<T> {
-  state: T | null;
-  initialize: boolean;
-}
+type IRef<T = any> = { value: T };
 
-interface ComputedContext<T> {
+interface IComputed<T = any> {
   fn: () => T;
   initialize: boolean;
-  state: { value: T };
+  readonly state: IRef;
   watch: unknown;
 }
 
-interface CompositionAPI {
-  ref<T>(initialState: T): T;
-
-  reactive<T extends Record<string, unknown>>(initialState: T): T;
-
-  computed<T>(callbackFn: () => T, watchState?: unknown): T;
-}
-
-function Composition(callback: () => void): CompositionAPI {
-  const refContext: RefContext<unknown> = {
-    state: null,
+function Composition(callback: () => void) {
+  const refContext = {
+    state: { value: null } as IRef,
     initialize: false,
   };
 
-  const reactiveContext: RefContext<Record<string, unknown>> = {
-    state: null,
+  const reactiveContext = {
+    state: null as unknown as Record<string, any>,
     initialize: false,
   };
 
-  const computedContext: ComputedContext<unknown> = {
+  const computedContext: IComputed = {
     fn: () => '',
     initialize: false,
     state: { value: null },
@@ -50,7 +39,7 @@ function Composition(callback: () => void): CompositionAPI {
     return refContext.state as T;
   };
 
-  const reactive = <T extends Record<string, unknown>>(initialState: T): T => {
+  const reactive = <T extends object>(initialState: T) => {
     const { initialize } = reactiveContext;
 
     if (!initialize) {
@@ -58,10 +47,10 @@ function Composition(callback: () => void): CompositionAPI {
       reactiveContext.initialize = true;
     }
 
-    return reactiveContext.state as T;
+    return reactiveContext.state;
   };
 
-  const computed = <T>(callbackFn: () => T, watchState?: unknown): T => {
+  const computed = <T>(callbackFn: () => T, watchState?: unknown) => {
     const { initialize, fn, watch } = computedContext;
 
     if (!initialize) {
@@ -70,15 +59,15 @@ function Composition(callback: () => void): CompositionAPI {
       computedContext.watch = watchState;
       computedContext.initialize = true;
 
-      return computedContext.state as T;
+      return computedContext.state;
     }
 
     if (JSON.stringify(watch) !== JSON.stringify(watchState)) {
       computedContext.watch = watchState;
-      computedContext.state!.value = fn();
+      computedContext.state.value = fn();
     }
 
-    return computedContext.state as T;
+    return computedContext.state;
   };
 
   return {
